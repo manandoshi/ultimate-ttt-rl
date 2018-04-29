@@ -1,4 +1,4 @@
-from ultimateboard import UTTTBoardDecision, UTTTBoard
+from ultimateboard import UTTTBoardDecision, UTTTBoard, STATE_TO_NUMBER_MAP
 from learning import TableLearning
 import random
 from keras.models import Model
@@ -85,7 +85,6 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         f = Dense(1, activation='tanh')(f)
         f = Reshape((-1,))(f)
 
-
         sgd = SGD(lr=0.001)
 
         self.model = Model(inputs=inp, outputs=f)
@@ -127,8 +126,6 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             self.board.makeMove(self.player, chosenBoard, pickOne)
         return self.convertBoardStateToInput(previousState)
 
-
-    
 class RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):
         self.learningAlgo = learningModel
