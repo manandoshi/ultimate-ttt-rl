@@ -12,6 +12,7 @@ class UTTTPlayer(object):
     def setBoard(self, board, player):
         self.board = board
         self.player = player   # X or O
+        self.playernum = 1 if player == 'X' else -1
 
     def isBoardActive(self):
         return (self.board is not None and self.board.getBoardDecision() == UTTTBoardDecision.ACTIVE)
@@ -76,7 +77,7 @@ class conv_RLUTTTPlayer(UTTTPlayer):
                     moves.append((boardLocation, placeOnBoard))
                     next_states.append(possibleNextState)
 
-            v = self.model.predict(np.array(next_states)).reshape([-1])
+            v = self.model.predict(np.array(next_states)*self.playernum).reshape([-1])
             p = np.exp(v)
             p = (1-self.gamma_exp)*(p/np.sum(p)) + self.gamma_exp*(np.ones_like(p)/p.size)
             
