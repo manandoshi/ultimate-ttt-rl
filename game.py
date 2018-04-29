@@ -31,13 +31,13 @@ class SingleGame(object):
         self.player2.setBoard(self.board, GridStates.PLAYER_O)
         data_X = []
         data_O = []
-        moves = 0
+
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
             self.player1.makeNextMove()
             data_X.append(self.board.getBoardState())
             self.player2.makeNextMove()
             data_O.append(self.board.getBoardState())
-            moves += 1
+
         self.player1.finishGame()
         self.player2.finishGame()
         
