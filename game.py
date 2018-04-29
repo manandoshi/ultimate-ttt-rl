@@ -27,11 +27,12 @@ class SingleGame(object):
     def playAGame2(self):
         self.player1.startNewGame()
         self.player2.startNewGame()
+        self.player1.setBoard(self.board, GridStates.PLAYER_X)
+        self.player2.setBoard(self.board, GridStates.PLAYER_O)
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
-            self.player1.setBoard(self.board, GridStates.PLAYER_X)
-            self.player2.setBoard(self.board, GridStates.PLAYER_O)
             self.player1.makeNextMove()
             self.player2.makeNextMove()
+
         self.player1.finishGame()
         self.player2.finishGame()
         return self.board.getBoardDecision()
