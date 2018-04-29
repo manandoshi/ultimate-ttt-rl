@@ -8,7 +8,7 @@ def stateToNP(boardState):
     t1 = np.arange(81)//3 %3 + 3*(np.arange(81)//27)
     t2 = np.arange(81)%3 + (3*(np.arange(81)//9))%9
     
-    x  = np.array(list(map(lambda x: STATE_TO_NUMBER_MAP.get(x), boardState))).reshape([9,9])
+    x  = np.array(list(map(lambda x: STATE_TO_NUMBER_MAP.get(x), boardState)))
     state = np.zeros([9,9])
     state[t1,t2] = x
     return state
