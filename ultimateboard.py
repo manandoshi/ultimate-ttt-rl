@@ -1,10 +1,17 @@
 from board import TTTBoard, TTTBoardDecision, GridStates
+import numpy as np
 import itertools
 
 STATE_TO_NUMBER_MAP = {GridStates.EMPTY: 0, GridStates.PLAYER_O: -1, GridStates.PLAYER_X: 1}
 
 def stateToNP(boardState):
-    return np.array(list(map(lambda x: STATE_TO_NUMBER_MAP.get(x), boardState))).reshape([9,9])
+    t1 = np.arange(81)//3 %3 + 3*(np.arange(81)//27)
+    t2 = np.arange(81)%3 + (3*(np.arange(81)//9))%9
+    
+    x  = np.array(list(map(lambda x: STATE_TO_NUMBER_MAP.get(x), boardState))).reshape([9,9])
+    state = np.zeros([9,9])
+    state[t1,t2] = x
+    return state
 
 class UTTTBoardDecision():
     ACTIVE = 10

@@ -52,12 +52,9 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         loc = 27*boardLocation[0] + 9*boardLocation[1] + 3*placeOnBoard[0] + placeOnBoard[1]
         boardCopy = list(state)
         boardCopy[loc] = self.player
-        return ''.join(boardCopy)
+        return stateToNP(''.join(boardCopy))
 
     def makeNextMove(self):
-        import pdb;
-        pdb.set_trace();
-
         previousState = self.board.getBoardState()
 
         if self.isBoardActive():
@@ -69,12 +66,15 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             moves = []
             next_states = []
 
+            import pdb;
+            pdb.set_trace();
+
             for boardLocation in activeBoardLocations:
                 emptyPlaces = self.board.getEmptyBoardPlaces(boardLocation)
                 for placeOnBoard in emptyPlaces:
                     possibleNextState = self.testNextMove(previousState, boardLocation, placeOnBoard)
                     moves.append((boardLocation, placeOnBoard))
-                    next_states.append(self.convertBoardStateToInput(possibleNextState))
+                    next_states.append(possibleNextState)
 
             gamma = 0
             v = self.model.predict(next_states)
