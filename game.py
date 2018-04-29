@@ -1,5 +1,5 @@
 from board import TTTBoardDecision, GridStates, TTTBoard
-from ultimateboard import stateToNP
+from ultimateboard import UTTTBoardDecision, stateToNP
 
 class SingleGame(object):
     def __init__(self, player1, player2, BoardClass=TTTBoard, BoardDecisionClass=TTTBoardDecision):
@@ -27,13 +27,25 @@ class SingleGame(object):
     def playAGame2(self):
         self.player1.startNewGame()
         self.player2.startNewGame()
+        self.player1.setBoard(self.board, GridStates.PLAYER_X)
+        self.player2.setBoard(self.board, GridStates.PLAYER_O)
+        data_X = []
+        data_O = []
+        moves = 0
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
-            self.player1.setBoard(self.board, GridStates.PLAYER_X)
-            self.player2.setBoard(self.board, GridStates.PLAYER_O)
             self.player1.makeNextMove()
+            data_X.append(self.board.getBoardState())
             self.player2.makeNextMove()
+            data_O.append(self.board.getBoardState())
+            moves += 1
         self.player1.finishGame()
         self.player2.finishGame()
+        
+        assert self.board.getBoardDecision() != UTTTBoardDecision.ACTIVE
+
+        self.player1.learnFromGame(data_X, self.board.getBoardDecision())
+        self.player2.learnFromGame(data_O, self.board.getBoardDecision())
+            
         return self.board.getBoardDecision()
 
     def selfPlay(self):

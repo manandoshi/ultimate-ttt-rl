@@ -22,6 +22,9 @@ class UTTTPlayer(object):
     def learnFromMove(self, prevBoardState):
         raise NotImplementedError
 
+    def learnFromGame(self, states, decision):
+        pass
+
     def startNewGame(self):
         pass
 
@@ -46,9 +49,10 @@ class RandomUTTTPlayer(UTTTPlayer):
         pass  # Random player does not learn from move
 
 class conv_RLUTTTPlayer(UTTTPlayer):
-    def __init__(self, learningModel, gamma_exp = 0):
+    def __init__(self, learningModel, gamma_exp = 0, gamma = 0.8):
         self.model = learningModel
         self.gamma_exp=gamma_exp
+        self.gamma = gamma
 
     def testNextMove(self, state, boardLocation, placeOnBoard):
         loc = 27*boardLocation[0] + 9*boardLocation[1] + 3*placeOnBoard[0] + placeOnBoard[1]
@@ -68,7 +72,6 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             moves = []
             next_states = []
 
-
             for boardLocation in activeBoardLocations:
                 emptyPlaces = self.board.getEmptyBoardPlaces(boardLocation)
                 for placeOnBoard in emptyPlaces:
@@ -87,6 +90,27 @@ class conv_RLUTTTPlayer(UTTTPlayer):
 
             self.board.makeMove(self.player, chosenBoard, pickOne)
         return previousState
+
+    def learnFromGame(self, states, decision):
+        moves = len(states)
+        states = np.array([stateToNP(state) for state in states])
+        if self.player == 'O':
+            states = -1*states
+        won = 0
+        won_X = decision == UTTTBoardDecision.WON_X
+        won_O = decision == UTTTBoardDecision.WON_O
+        me_X = self.player == 'X'
+        me_O = self.player == 'O'
+        me_won = (me_X and won_X) or (me_O and won_O)
+        me_lost = (me_X and won_O) or (me_O and won_X)
+        if me_won:
+            won = 1
+        elif me_lost:
+            won = -1
+        labels = [won*(self.gamma**i) for i in range(moves)]
+        labels.reverse()
+        labels = np.array(labels)
+        self.model.fit(states, labels)
 
 class RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):
