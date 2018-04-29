@@ -85,8 +85,6 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             self.board.makeMove(self.player, chosenBoard, pickOne)
         return self.convertBoardStateToInput(previousState)
 
-
-    
 class RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):
         self.learningAlgo = learningModel
