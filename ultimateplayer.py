@@ -1,13 +1,7 @@
-from ultimateboard import UTTTBoardDecision, UTTTBoard
+from ultimateboard import UTTTBoardDecision, UTTTBoard, stateToNP
 from learning import TableLearning
 import random
-from keras.models import Model
-from keras.layers import Dense, Dropout, Activation, Reshape, LeakyReLU, Input, Conv2D, concatenate
-from keras.optimizers import SGD, Adam
-from keras.utils import to_categorical
-from keras.initializers import RandomNormal
 
-STATE_TO_NUMBER_MAP = {GridStates.EMPTY: 0, GridStates.PLAYER_O: -1, GridStates.PLAYER_X: 1}
 
 class UTTTPlayer(object):
     def __init__(self):
@@ -52,44 +46,7 @@ class RandomUTTTPlayer(UTTTPlayer):
 
 class conv_RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):
-        inp = Input(shape=(9,9,))
-        r   = Reshape((9,9,1))(inp)
-
-        x = Conv2D( filters = 5, kernel_size = (1,3), stride = (1,3) )(r)
-        x = LeakyReLU(alpha=0.1)(x)
-        x = Conv2D( filters = 5, kernel_size = (3,1), stride = (3,1) )(x)
-        x = LeakyReLU(alpha=0.1)(x)
-        x = Conv2D( filters = 15, kernel_size = (3,3))(x)
-        x = LeakyReLU(alpha=0.1)(x)
-        x = Reshape((-1,15))(x)
-
-
-        y = Conv2D( filters = 5, kernel_size = (3,1), stride = (3,1) )(r)
-        y = LeakyReLU(alpha=0.1)(y)
-        y = Conv2D( filters = 5, kernel_size = (1,3), stride = (1,3))(y)
-        y = LeakyReLU(alpha=0.1)(y)
-        y = Conv2D( filters = 15, kernel_size = (3,3))(y)
-        y = LeakyReLU(alpha=0.1)(y)
-        y = Reshape((-1,15))(y)
-
-
-        z = Conv2D( filters = 20, kernel_size = (3,3), stride = (3,3) )(r)
-        z = LeakyReLU(alpha=0.1)(z)
-        z = Conv2D( filters = 15, kernel_size = (3,3))(z)
-        z = LeakyReLU(alpha=0.1)(z)
-        z = Reshape((-1,15))(z)
-
-        f = concatenate([x,y,z])
-        f = Dense(64)(f)
-        f = LeakyReLU(alpha=0.1)(f)
-        f = Dense(1, activation='tanh')(f)
-        f = Reshape((-1,))(f)
-
-
-        sgd = SGD(lr=0.001)
-
-        self.model = Model(inputs=inp, outputs=f)
-        self.model.compile(loss='mean_squared_error', optimizer=sgd)
+        self.model = learningModel
 
     def testNextMove(self, state, boardLocation, placeOnBoard):
         loc = 27*boardLocation[0] + 9*boardLocation[1] + 3*placeOnBoard[0] + placeOnBoard[1]
@@ -97,11 +54,12 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         boardCopy[loc] = self.player
         return ''.join(boardCopy)
 
-    def convertBoardStateToInput(self, boardState):
-        return np.array(list(map(lambda x: STATE_TO_NUMBER_MAP.get(x), boardState))).reshape([9,9])
-
     def makeNextMove(self):
+        import pdb;
+        pdb.set_trace();
+
         previousState = self.board.getBoardState()
+
         if self.isBoardActive():
             nextBoardLocation = self.board.getNextBoardLocation()
             activeBoardLocations = [nextBoardLocation]
@@ -184,3 +142,5 @@ if __name__  == '__main__':
     board = UTTTBoard()
     player1 = RandomUTTTPlayer()
     player2 = RandomUTTTPlayer()
+
+

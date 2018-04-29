@@ -13,12 +13,24 @@ class SingleGame(object):
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
             self.player1.setBoard(self.board, GridStates.PLAYER_X)
             self.player2.setBoard(self.board, GridStates.PLAYER_O)
-            import pdb;
-            pdb.set_trace();
             pState1 = self.player1.makeNextMove()
             self.player1.learnFromMove(pState1)
             self.player2.learnFromMove(pState1)
             pState2 = self.player2.makeNextMove()
+            self.player1.learnFromMove(pState2)
+            self.player2.learnFromMove(pState2)
+        self.player1.finishGame()
+        self.player2.finishGame()
+        return self.board.getBoardDecision()
+
+    def playAGame2(self):
+        self.player1.startNewGame()
+        self.player2.startNewGame()
+        while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
+            self.player1.setBoard(self.board, GridStates.PLAYER_X)
+            self.player2.setBoard(self.board, GridStates.PLAYER_O)
+            self.player1.makeNextMove()
+            self.player2.makeNextMove()
             self.player1.learnFromMove(pState2)
             self.player2.learnFromMove(pState2)
         self.player1.finishGame()
@@ -52,8 +64,10 @@ class GameSequence(object):
         return (xpct, opct, drawpct)
 
 if __name__ == '__main__':
-    from ultimateplayer import RandomUTTTPlayer
+    from ultimateplayer import RandomUTTTPlayer, conv_RLUTTTPlayer
     from ultimateboard import UTTTBoard, UTTTBoardDecision
-    player1, player2 = RandomUTTTPlayer(), RandomUTTTPlayer()
-    gameSeq = GameSequence(10000, player1, player2, UTTTBoard, UTTTBoardDecision)
-    print(gameSeq.playGamesAndGetWinPercent())
+    from learning import generateModel
+    model = generateModel()
+    player1, player2 = conv_RLUTTTPlayer(model), conv_RLUTTTPlayer(model)
+    game = SingleGame(player1, player2, UTTTBoard, UTTTBoardDecision)
+    game.playAGame2()
