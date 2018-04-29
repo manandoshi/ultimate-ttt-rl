@@ -1,6 +1,7 @@
 from ultimateboard import UTTTBoardDecision, UTTTBoard, stateToNP
 from learning import TableLearning
 import random
+import numpy as np
 
 
 class UTTTPlayer(object):
@@ -45,8 +46,9 @@ class RandomUTTTPlayer(UTTTPlayer):
         pass  # Random player does not learn from move
 
 class conv_RLUTTTPlayer(UTTTPlayer):
-    def __init__(self, learningModel):
+    def __init__(self, learningModel, gamma_exp = 0):
         self.model = learningModel
+        self.gamma_exp=gamma_exp
 
     def testNextMove(self, state, boardLocation, placeOnBoard):
         loc = 27*boardLocation[0] + 9*boardLocation[1] + 3*placeOnBoard[0] + placeOnBoard[1]
@@ -66,8 +68,6 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             moves = []
             next_states = []
 
-            import pdb;
-            pdb.set_trace();
 
             for boardLocation in activeBoardLocations:
                 emptyPlaces = self.board.getEmptyBoardPlaces(boardLocation)
@@ -76,14 +76,17 @@ class conv_RLUTTTPlayer(UTTTPlayer):
                     moves.append((boardLocation, placeOnBoard))
                     next_states.append(possibleNextState)
 
-            gamma = 0
-            v = self.model.predict(next_states)
+            v = self.model.predict(np.array(next_states)).reshape([-1])
             p = np.exp(v)
-            p = (1-gamma_exp)*(p/np.sum(p)) + gamma_exp*(np.ones_like(p)/p.size)
-            (chosenBoard, pickOne) = max(moveChoices, key=moveChoices.get)
+            p = (1-self.gamma_exp)*(p/np.sum(p)) + self.gamma_exp*(np.ones_like(p)/p.size)
+            
+            q_chosen = np.random.choice(len(moves),1,p=p)[0]
+
+
+            (chosenBoard, pickOne) = moves[q_chosen]
 
             self.board.makeMove(self.player, chosenBoard, pickOne)
-        return self.convertBoardStateToInput(previousState)
+        return previousState
 
 class RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):

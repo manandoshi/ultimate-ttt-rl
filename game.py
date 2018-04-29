@@ -1,4 +1,5 @@
 from board import TTTBoardDecision, GridStates, TTTBoard
+from ultimateboard import stateToNP
 
 class SingleGame(object):
     def __init__(self, player1, player2, BoardClass=TTTBoard, BoardDecisionClass=TTTBoardDecision):
@@ -31,8 +32,6 @@ class SingleGame(object):
             self.player2.setBoard(self.board, GridStates.PLAYER_O)
             self.player1.makeNextMove()
             self.player2.makeNextMove()
-            self.player1.learnFromMove(pState2)
-            self.player2.learnFromMove(pState2)
         self.player1.finishGame()
         self.player2.finishGame()
         return self.board.getBoardDecision()
