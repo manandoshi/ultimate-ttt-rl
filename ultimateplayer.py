@@ -50,7 +50,7 @@ class RandomUTTTPlayer(UTTTPlayer):
         pass  # Random player does not learn from move
 
 class conv_RLUTTTPlayer(UTTTPlayer):
-    def __init__(self, learningModel, gamma_exp = 0, gamma = 0.8):
+    def __init__(self, learningModel, gamma_exp = 0.1, gamma = 0.8):
         self.model = learningModel
         self.gamma_exp=gamma_exp
         self.gamma = gamma
@@ -111,7 +111,17 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         labels = [won*(self.gamma**i) for i in range(moves)]
         labels.reverse()
         labels = np.array(labels)
-        self.model.fit(states, labels)
+
+        aux_data = []
+        aux_rewards = []
+        for grid, reward in zip(states, labels):
+            for i in range(4):
+                aux_data.append(np.rot90(grid,i))
+                aux_rewards.append(reward)
+                aux_data.append(np.rot90(grid,i).T)
+                aux_rewards.append(reward)
+
+        self.model.fit(np.array(aux_data, dtype='float32'), np.array(aux_rewards, dtype='float32'), epochs=10, verbose=0)
 
 class RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):
