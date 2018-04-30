@@ -165,20 +165,20 @@ def generateModel():
     y = Reshape((-1,15))(y)
 
 
-    z = Conv2D( filters = 20, kernel_size = (3,3), strides = (3,3) , kernel_initializer='glorot_uniform')(r)
+    z = Conv2D( filters = 100, kernel_size = (9,9), kernel_initializer='glorot_uniform')(r)
     z = LeakyReLU(alpha=0.1)(z)
-    z = Conv2D( filters = 15, kernel_size = (3,3), kernel_initializer='glorot_uniform')(z)
-    z = LeakyReLU(alpha=0.1)(z)
-    z = Reshape((-1,15))(z)
+    z = Reshape((-1,100))(z)
 
     f = concatenate([x,y,z])
-    f = Dense(64)(f)
+    f = Dense(100)(f)
+    f = LeakyReLU(alpha=0.1)(f)
+    f = Dense(100)(f)
     f = LeakyReLU(alpha=0.1)(f)
     f = Dense(1, activation='tanh')(f)
     f = Reshape((-1,))(f)
 
 
-    sgd = SGD(lr=0.001)
+    sgd = Adam(lr=0.01)
 
     model = Model(inputs=inp, outputs=f)
     model.compile(loss='mean_squared_error', optimizer=sgd)
