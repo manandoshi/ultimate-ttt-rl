@@ -1,5 +1,6 @@
 from board import TTTBoardDecision, GridStates, TTTBoard
 from ultimateboard import UTTTBoardDecision, stateToNP
+import numpy as np
 
 class SingleGame(object):
     def __init__(self, player1, player2, BoardClass=TTTBoard, BoardDecisionClass=TTTBoardDecision):
@@ -24,14 +25,14 @@ class SingleGame(object):
         self.player2.finishGame()
         return self.board.getBoardDecision()
 
-    def playAGame2(self):
+    def playAGame2(self, learn=True):
         self.player1.startNewGame()
         self.player2.startNewGame()
         self.player1.setBoard(self.board, GridStates.PLAYER_X)
         self.player2.setBoard(self.board, GridStates.PLAYER_O)
         data_X = []
         data_O = []
-
+        
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
             self.player1.makeNextMove()
             data_X.append(self.board.getBoardState())
@@ -43,8 +44,9 @@ class SingleGame(object):
         
         assert self.board.getBoardDecision() != UTTTBoardDecision.ACTIVE
 
-        self.player1.learnFromGame(data_X, self.board.getBoardDecision())
-        self.player2.learnFromGame(data_O, self.board.getBoardDecision())
+        if learn:
+            self.player1.learnFromGame(data_X, self.board.getBoardDecision())
+            self.player2.learnFromGame(data_O, self.board.getBoardDecision())
             
         return self.board.getBoardDecision()
 
@@ -64,11 +66,11 @@ class GameSequence(object):
         self.BoardClass = BoardClass
         self.BoardDecisionClass = BoardDecisionClass
 
-    def playGamesAndGetWinPercent(self):
+    def playGamesAndGetWinPercent(self, learn=True):
         results = []
         for i in range(self.numberOfGames):
             game = SingleGame(self.player1, self.player2, self.BoardClass, self.BoardDecisionClass)
-            results.append(game.playAGame())
+            results.append(game.playAGame2(learn))
         xpct, opct, drawpct = float(results.count(self.BoardDecisionClass.WON_X))/float(self.numberOfGames), \
                               float(results.count(self.BoardDecisionClass.WON_O))/float(self.numberOfGames), \
                               float(results.count(self.BoardDecisionClass.DRAW))/float(self.numberOfGames)
@@ -80,5 +82,29 @@ if __name__ == '__main__':
     from learning import generateModel
     model = generateModel()
     player1, player2 = conv_RLUTTTPlayer(model), conv_RLUTTTPlayer(model)
-    game = SingleGame(player1, player2, UTTTBoard, UTTTBoardDecision)
-    game.playAGame2()
+    player_r = RandomUTTTPlayer()
+    
+    np.random.seed(0)
+    game = GameSequence(100,player_r, player1, UTTTBoard, UTTTBoardDecision)
+    print("Random X \t Machau O")
+    print(game.playGamesAndGetWinPercent(False))
+    game = GameSequence(100,player1, player_r, UTTTBoard, UTTTBoardDecision)
+    print("Random O \t Machau X")
+    print(game.playGamesAndGetWinPercent(False))
+
+    assert player1.model is player2.model
+
+    print("Training...")
+    game = GameSequence(20,player1, player2, UTTTBoard, UTTTBoardDecision)
+    game.playGamesAndGetWinPercent()
+    print("Training done")
+
+    assert player1.model is player2.model
+
+    np.random.seed(0)
+    game = GameSequence(100,player_r, player1, UTTTBoard, UTTTBoardDecision)
+    print("Random X \t Machau O")
+    print(game.playGamesAndGetWinPercent(False))
+    game = GameSequence(100,player1, player_r, UTTTBoard, UTTTBoardDecision)
+    print("Random O \t Machau X")
+    print(game.playGamesAndGetWinPercent(False))
