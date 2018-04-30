@@ -36,8 +36,9 @@ class SingleGame(object):
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
             self.player1.makeNextMove()
             data_X.append(self.board.getBoardState())
-            self.player2.makeNextMove()
-            data_O.append(self.board.getBoardState())
+            if self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
+                self.player2.makeNextMove()
+                data_O.append(self.board.getBoardState())
 
         self.player1.finishGame()
         self.player2.finishGame()
