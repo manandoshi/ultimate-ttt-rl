@@ -63,6 +63,7 @@ class conv_RLUTTTPlayer(UTTTPlayer):
 
     def makeNextMove(self):
         previousState = self.board.getBoardState()
+        pStateNP = stateToNP(previousState)
 
         if self.isBoardActive():
             nextBoardLocation = self.board.getNextBoardLocation()
@@ -72,13 +73,16 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             
             moves = []
             next_states = []
-
+            
             for boardLocation in activeBoardLocations:
                 emptyPlaces = self.board.getEmptyBoardPlaces(boardLocation)
                 for placeOnBoard in emptyPlaces:
                     possibleNextState = self.testNextMove(previousState, boardLocation, placeOnBoard)
+                    last_move = possibleNextState - pStateNP
+                    possibleNextState = np.stack([possibleNextState, last_move],axis=2)
                     moves.append((boardLocation, placeOnBoard))
                     next_states.append(possibleNextState)
+
 
             v = self.model.predict(np.array(next_states)*self.playernum).reshape([-1])
             p = np.exp(v)
@@ -112,13 +116,20 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         labels.reverse()
         labels = np.array(labels)
 
+        last_moves = states - np.roll(states,1,0)
+        last_moves[0][:] = states[0][:]
+        last_moves = np.where(last_moves>0,last_moves,0)
+
+        states = np.stack([states, last_moves],axis=3)
+
         aux_data = []
         aux_rewards = []
         for grid, reward in zip(states, labels):
             for i in range(4):
-                aux_data.append(np.rot90(grid,i))
+                temp = np.rot90(grid,i,axes=(0,1))
+                aux_data.append(temp)
                 aux_rewards.append(reward)
-                aux_data.append(np.rot90(grid,i).T)
+                aux_data.append(np.transpose(temp,(1,0,2)))
                 aux_rewards.append(reward)
 
         self.model.fit(np.array(aux_data, dtype='float32'), np.array(aux_rewards, dtype='float32'), epochs=10, verbose=0)
@@ -178,5 +189,3 @@ if __name__  == '__main__':
     board = UTTTBoard()
     player1 = RandomUTTTPlayer()
     player2 = RandomUTTTPlayer()
-
-

@@ -143,8 +143,9 @@ class NNUltimateLearning(GenericLearning):
 
 
 def generateModel():
-    inp = Input(shape=(9,9,))
-    r   = Reshape((9,9,1))(inp)
+    inp = Input(shape=(9,9,2))
+    #r   = Reshape((9,9,1))(inp)
+    r = inp
 
     x = Conv2D( filters = 5, kernel_size = (1,3), strides = (1,3), kernel_initializer='glorot_uniform' )(r)
     x = LeakyReLU(alpha=0.1)(x)
