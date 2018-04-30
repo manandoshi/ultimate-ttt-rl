@@ -104,7 +104,7 @@ class NNUltimateLearning(GenericLearning):
         self.trainModel(boardStates, predYs)
 
     def convertBoardStateToInput(self, boardState):
-        return map(lambda x: self.STATE_TO_NUMBER_MAP.get(x), boardState)
+        return list(map(lambda x: self.STATE_TO_NUMBER_MAP.get(x), boardState))
 
     def trainModel(self, boardStates, y):
         self.model.fit(np.asarray(boardStates), np.asarray(y), verbose=0)

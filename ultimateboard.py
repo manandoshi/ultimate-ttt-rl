@@ -36,7 +36,7 @@ class UTTTBoard(object):
             return len(set(threeResults)) == 1 and threeResults[0] in [TTTBoardDecision.WON_O, TTTBoardDecision.WON_X]
 
         def getWinState(listOfThree):
-            threeResults = map(lambda x: x.getBoardDecision(), listOfThree)
+            threeResults = list(map(lambda x: x.getBoardDecision(), listOfThree))
             return UTTTBoardDecision.WON_O if TTTBoardDecision.WON_O in threeResults else UTTTBoardDecision.WON_X
 
         for row in self.board:  # Check rows first
@@ -86,10 +86,10 @@ class UTTTBoard(object):
         #self.printBoard()
         self.determineBoardState()
         if self.decision == UTTTBoardDecision.DRAW:
-            print('This Ultimate-TTT game was drawn!')
+            #print('This Ultimate-TTT game was drawn!')
             self.nextBoardLocation = [None, None]
         elif self.decision != UTTTBoardDecision.ACTIVE:
-            print('This Ultimate-TTT game was won by %s'%(GridStates.PLAYER_X if self.decision == UTTTBoardDecision.WON_X else GridStates.PLAYER_O))
+            #print('This Ultimate-TTT game was won by %s'%(GridStates.PLAYER_X if self.decision == UTTTBoardDecision.WON_X else GridStates.PLAYER_O))
             self.nextBoardLocation = [None, None]
         else:
             nextTttboard = self.board[i][j]
