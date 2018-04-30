@@ -141,7 +141,6 @@ class NNUltimateLearning(GenericLearning):
     def loadLearning(self, filename):
         self.model = load_model(filename)
 
-
 def generateModel():
     inp = Input(shape=(9,9,2))
     #r   = Reshape((9,9,1))(inp)
@@ -155,7 +154,6 @@ def generateModel():
     x = LeakyReLU(alpha=0.1)(x)
     x = Reshape((-1,15))(x)
 
-
     y = Conv2D( filters = 5, kernel_size = (3,1), strides = (3,1) , kernel_initializer='glorot_uniform')(r)
     y = LeakyReLU(alpha=0.1)(y)
     y = Conv2D( filters = 5, kernel_size = (1,3), strides = (1,3), kernel_initializer='glorot_uniform')(y)
@@ -163,7 +161,6 @@ def generateModel():
     y = Conv2D( filters = 15, kernel_size = (3,3), kernel_initializer='glorot_uniform')(y)
     y = LeakyReLU(alpha=0.1)(y)
     y = Reshape((-1,15))(y)
-
 
     z = Conv2D( filters = 100, kernel_size = (9,9), kernel_initializer='glorot_uniform')(r)
     z = LeakyReLU(alpha=0.1)(z)
@@ -176,7 +173,6 @@ def generateModel():
     f = LeakyReLU(alpha=0.1)(f)
     f = Dense(1, activation='tanh')(f)
     f = Reshape((-1,))(f)
-
 
     sgd = Adam(lr=0.01)
 
