@@ -1,6 +1,7 @@
+import numpy as np
+np.random.seed(0)
 from board import TTTBoardDecision, GridStates, TTTBoard
 from ultimateboard import UTTTBoardDecision, stateToNP
-import numpy as np
 
 class SingleGame(object):
     def __init__(self, player1, player2, BoardClass=TTTBoard, BoardDecisionClass=TTTBoardDecision):
