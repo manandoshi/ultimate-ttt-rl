@@ -88,7 +88,8 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             p = np.exp(v)
             p = (1-self.gamma_exp)*(p/np.sum(p)) + self.gamma_exp*(np.ones_like(p)/p.size)
             
-            q_chosen = np.random.choice(len(moves),1,p=p)[0]
+            #q_chosen = np.random.choice(len(moves),1,p=p)[0]
+            q_chosen = np.argmax(p)
 
 
             (chosenBoard, pickOne) = moves[q_chosen]
