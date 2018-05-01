@@ -90,12 +90,14 @@ if __name__ == '__main__':
     game = GameSequence(100,player_r, player1, UTTTBoard, UTTTBoardDecision)
     print("Random X \t Model O")
     print(game.playGamesAndGetWinPercent(False))
+    np.random.seed(0)
     game = GameSequence(100,player1, player_r, UTTTBoard, UTTTBoardDecision)
     print("Model X \t Random O")
     print(game.playGamesAndGetWinPercent(False))
 
     assert player1.model is player2.model
 
+    np.random.seed(0)
     print("Training...")
     game = GameSequence(2000,player1, player2, UTTTBoard, UTTTBoardDecision)
     game.playGamesAndGetWinPercent()
@@ -107,6 +109,7 @@ if __name__ == '__main__':
     game = GameSequence(100,player_r, player1, UTTTBoard, UTTTBoardDecision)
     print("Random X \t Model O")
     print(game.playGamesAndGetWinPercent(False))
+    np.random.seed(0)
     game = GameSequence(100,player1, player_r, UTTTBoard, UTTTBoardDecision)
     print("Model X \t Random O")
     print(game.playGamesAndGetWinPercent(False))

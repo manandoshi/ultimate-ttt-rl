@@ -17,7 +17,7 @@ class UTTTPlayer(object):
     def isBoardActive(self):
         return (self.board is not None and self.board.getBoardDecision() == UTTTBoardDecision.ACTIVE)
 
-    def makeNextMove(self):
+    def makeNextMove(self, learn=True):
         raise NotImplementedError
 
     def learnFromMove(self, prevBoardState):
@@ -33,7 +33,7 @@ class UTTTPlayer(object):
         pass
 
 class RandomUTTTPlayer(UTTTPlayer):
-    def makeNextMove(self):
+    def makeNextMove(self, learn=True):
         previousState = self.board.getBoardState()
         if self.isBoardActive():
             nextBoardLocation = self.board.getNextBoardLocation()
@@ -61,9 +61,8 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         boardCopy[loc] = self.player
         return stateToNP(''.join(boardCopy))
 
-    def makeNextMove(self):
+    def makeNextMove(self, learn=True):
         previousState = self.board.getBoardState()
-        pStateNP = stateToNP(previousState)
 
         if self.isBoardActive():
             nextBoardLocation = self.board.getNextBoardLocation()
@@ -73,23 +72,28 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             
             moves = []
             next_states = []
-            
+            lp = []
+
             for boardLocation in activeBoardLocations:
                 emptyPlaces = self.board.getEmptyBoardPlaces(boardLocation)
                 for placeOnBoard in emptyPlaces:
                     possibleNextState = self.testNextMove(previousState, boardLocation, placeOnBoard)
-                    last_move = possibleNextState - pStateNP
-                    possibleNextState = np.stack([possibleNextState, last_move],axis=2)
                     moves.append((boardLocation, placeOnBoard))
                     next_states.append(possibleNextState)
+                    
+                    lpi = np.zeros([3,3])
+                    lpi[placeOnBoard[0],placeOnBoard[1]] = 1
+                    lp.append(lpi)
 
 
-            v = self.model.predict(np.array(next_states)*self.playernum).reshape([-1])
+            v = self.model.predict([np.array(next_states)*self.playernum, np.array(lp)]).reshape([-1])
             p = np.exp(v)
             p = (1-self.gamma_exp)*(p/np.sum(p)) + self.gamma_exp*(np.ones_like(p)/p.size)
             
-            #q_chosen = np.random.choice(len(moves),1,p=p)[0]
-            q_chosen = np.argmax(p)
+            if learn:
+                q_chosen = np.random.choice(len(moves),1,p=p)[0]
+            else:
+                q_chosen = np.argmax(p)
 
 
             (chosenBoard, pickOne) = moves[q_chosen]
@@ -119,21 +123,29 @@ class conv_RLUTTTPlayer(UTTTPlayer):
 
         last_moves = states - np.roll(states,1,0)
         last_moves[0][:] = states[0][:]
-        last_moves = np.where(last_moves>0,last_moves,0)
-
-        states = np.stack([states, last_moves],axis=3)
 
         aux_data = []
         aux_rewards = []
+        aux_lp = []
+
         for grid, reward in zip(states, labels):
             for i in range(4):
-                temp = np.rot90(grid,i,axes=(0,1))
+                lpi = np.zeros([3,3],dtype='int')
+                r,c = np.where(grid==1)
+                lpi[r//3,c//3] = 1
+
+
+                temp = np.rot90(grid,i)
+                temp_lpi = np.rot90(lpi,i)
+
                 aux_data.append(temp)
+                aux_lp.append(temp_lpi)
                 aux_rewards.append(reward)
-                aux_data.append(np.transpose(temp,(1,0,2)))
+                aux_data.append(temp.T)
+                aux_lp.append(temp_lpi.T)
                 aux_rewards.append(reward)
 
-        self.model.fit(np.array(aux_data, dtype='float32'), np.array(aux_rewards, dtype='float32'), epochs=10, verbose=0)
+        self.model.fit([np.array(aux_data, dtype='float32'),np.array(aux_lp)], np.array(aux_rewards, dtype='float32'), epochs=10, verbose=0)
 
 class RLUTTTPlayer(UTTTPlayer):
     def __init__(self, learningModel):
@@ -155,7 +167,7 @@ class RLUTTTPlayer(UTTTPlayer):
     def finishGame(self):
         self.learningAlgo.gameOver()
 
-    def makeNextMove(self):
+    def makeNextMove(self, learn=True):
         previousState = self.board.getBoardState()
         if self.isBoardActive():
             nextBoardLocation = self.board.getNextBoardLocation()
