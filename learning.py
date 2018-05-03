@@ -1,4 +1,5 @@
 from board import GridStates, TTTBoardDecision
+from ultimateboard import UTTTBoardDecision
 import json
 from keras.models import Sequential, load_model
 from keras.layers import Dense
@@ -73,7 +74,7 @@ class TableLearning(GenericLearning):
 class NNUltimateLearning(GenericLearning):
     STATE_TO_NUMBER_MAP = {GridStates.EMPTY: 0, GridStates.PLAYER_O: -1, GridStates.PLAYER_X: 1}
 
-    def __init__(self, DecisionClass=TTTBoardDecision):
+    def __init__(self, DecisionClass=UTTTBoardDecision):
         self.DecisionClass = DecisionClass
         self.values = {}
         self.initializeModel()

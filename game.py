@@ -58,8 +58,6 @@ class SingleGame(object):
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
             pState1 = player1.makeMove()
 
-
-
 class GameSequence(object):
     def __init__(self, numberOfGames, player1, player2, BoardClass=TTTBoard, BoardDecisionClass=TTTBoardDecision):
         self.player1 = player1
@@ -72,18 +70,20 @@ class GameSequence(object):
         results = []
         for i in range(self.numberOfGames):
             game = SingleGame(self.player1, self.player2, self.BoardClass, self.BoardDecisionClass)
-            results.append(game.playAGame2(learn))
+            results.append(game.playAGame())
         xpct, opct, drawpct = float(results.count(self.BoardDecisionClass.WON_X))/float(self.numberOfGames), \
                               float(results.count(self.BoardDecisionClass.WON_O))/float(self.numberOfGames), \
                               float(results.count(self.BoardDecisionClass.DRAW))/float(self.numberOfGames)
         return (xpct, opct, drawpct)
 
 if __name__ == '__main__':
-    from ultimateplayer import RandomUTTTPlayer, conv_RLUTTTPlayer
+    from ultimateplayer import RandomUTTTPlayer, conv_RLUTTTPlayer, RLUTTTPlayer
     from ultimateboard import UTTTBoard, UTTTBoardDecision
     from learning import generateModel
-    model = generateModel()
-    player1, player2 = conv_RLUTTTPlayer(model), conv_RLUTTTPlayer(model)
+    from learning import NNUltimateLearning
+    #model = generateModel()
+    model = NNUltimateLearning()
+    player1, player2 = RLUTTTPlayer(model), RLUTTTPlayer(model)
     player_r = RandomUTTTPlayer()
     
     np.random.seed(0)
@@ -94,14 +94,10 @@ if __name__ == '__main__':
     print("Model X \t Random O")
     print(game.playGamesAndGetWinPercent(False))
 
-    assert player1.model is player2.model
-
     print("Training...")
     game = GameSequence(2000,player1, player2, UTTTBoard, UTTTBoardDecision)
     game.playGamesAndGetWinPercent()
     print("Training done")
-
-    assert player1.model is player2.model
 
     np.random.seed(0)
     game = GameSequence(100,player_r, player1, UTTTBoard, UTTTBoardDecision)
