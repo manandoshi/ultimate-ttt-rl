@@ -35,10 +35,10 @@ class SingleGame(object):
         data_O = []
         
         while self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
-            self.player1.makeNextMove()
+            self.player1.makeNextMove(False)
             data_X.append(self.board.getBoardState())
             if self.board.getBoardDecision() == self.BoardDecisionClass.ACTIVE:
-                self.player2.makeNextMove()
+                self.player2.makeNextMove(False)
                 data_O.append(self.board.getBoardState())
 
         self.player1.finishGame()
@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
     np.random.seed(0)
     print("Training...")
-    game = GameSequence(2000,player1, player2, UTTTBoard, UTTTBoardDecision)
+    game = GameSequence(5000,player1, player2, UTTTBoard, UTTTBoardDecision)
     game.playGamesAndGetWinPercent()
     print("Training done")
 
@@ -113,3 +113,5 @@ if __name__ == '__main__':
     game = GameSequence(100,player1, player_r, UTTTBoard, UTTTBoardDecision)
     print("Model X \t Random O")
     print(game.playGamesAndGetWinPercent(False))
+
+    model.save('tatti.h5')

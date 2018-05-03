@@ -8,6 +8,7 @@ from keras.layers import Dense, Dropout, Activation, Reshape, LeakyReLU, Input, 
 from keras.optimizers import SGD, Adam
 from keras.utils import to_categorical, plot_model
 from keras.initializers import RandomNormal
+from keras import regularizers
 import numpy as np
 
 class GenericLearning(object):
@@ -143,56 +144,21 @@ class NNUltimateLearning(GenericLearning):
 
 def generateModel():
     inp = Input(shape=(9,9))
-    r   = Reshape((9,9,1))(inp)
+    r   = Reshape((81,))(inp)
 
     lp = Input(shape=(3,3))
-    lpr = Reshape((3,3,1))(lp)
+    lpr = Reshape((9,))(lp)
 
-    x = Conv2D( filters = 20, kernel_size = (1,3), strides = (1,3), kernel_initializer='glorot_uniform' )(r)
-    x = LeakyReLU(alpha=0.1)(x)
-    x = Conv2D( filters = 20, kernel_size = (3,1), strides = (3,1), kernel_initializer='glorot_uniform')(x)
-    x = LeakyReLU(alpha=0.1)(x)
 
-    y = Conv2D( filters = 20, kernel_size = (3,1), strides = (3,1) , kernel_initializer='glorot_uniform')(r)
-    y = LeakyReLU(alpha=0.1)(y)
-    y = Conv2D( filters = 20, kernel_size = (1,3), strides = (1,3), kernel_initializer='glorot_uniform')(y)
-    y = LeakyReLU(alpha=0.1)(y)
-
-    z = Conv2D( filters = 20, kernel_size = (3,3), strides = (3,3), kernel_initializer='glorot_uniform')(r)
-    z = LeakyReLU(alpha=0.1)(z)
-
-    w = Reshape((81,))(inp)
-    w = Dense(81, activation='sigmoid')(w)
-    w = Dense(81, activation='sigmoid')(w)
-
-    f = concatenate([lpr,x,y,z],3)
-    f1 = Conv2D( filters = 20, kernel_size = (3,1), kernel_initializer='glorot_uniform')(f)
-    f1 = LeakyReLU(alpha=0.1)(f1)
-    f1 = Conv2D( filters = 20, kernel_size = (1,3), kernel_initializer='glorot_uniform')(f1)
-    f1 = LeakyReLU(alpha=0.1)(f1)
-    f1 = Reshape((-1,))(f1)
-
-    f2 = Conv2D( filters = 20, kernel_size = (1,3), kernel_initializer='glorot_uniform')(f)
-    f2 = LeakyReLU(alpha=0.1)(f2)
-    f2 = Conv2D( filters = 20, kernel_size = (3,1), kernel_initializer='glorot_uniform')(f2)
-    f2 = LeakyReLU(alpha=0.1)(f2)
-    f2 = Reshape((-1,))(f2)
-    
-    f3 = Conv2D( filters = 30, kernel_size = (3,3), kernel_initializer='glorot_uniform')(f)
-    f3 = LeakyReLU(alpha=0.1)(f3)
-    f3 = Reshape((-1,))(f3)
-
-    f = concatenate([f1, f2, f3, w])
-    f = Dense(100)(f)
-    f = LeakyReLU(alpha=0.1)(f)
-    f = Dense(1, activation='tanh')(f)
+    f = concatenate([r,lpr])
+    f = Dense(1, activation='tanh',kernel_regularizer=regularizers.l2(0.01))(f)
     f = Reshape((-1,))(f)
 
-    sgd = Adam(lr=0.01)
+    sgd = SGD(lr=0.0001)
 
     model = Model(inputs=[inp,lp], outputs=f)
     model.compile(loss='mean_squared_error', optimizer=sgd)
 
-    plot_model(model, to_file="model.png", show_shapes=True)
+    plot_model(model, to_file='model_seq.png', show_shapes=True)
 
     return model

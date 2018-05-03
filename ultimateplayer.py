@@ -50,7 +50,7 @@ class RandomUTTTPlayer(UTTTPlayer):
         pass  # Random player does not learn from move
 
 class conv_RLUTTTPlayer(UTTTPlayer):
-    def __init__(self, learningModel, gamma_exp = 0.1, gamma = 0.8):
+    def __init__(self, learningModel, gamma_exp = 0.1, gamma = 0.99):
         self.model = learningModel
         self.gamma_exp=gamma_exp
         self.gamma = gamma
@@ -90,10 +90,7 @@ class conv_RLUTTTPlayer(UTTTPlayer):
             p = np.exp(v)
             p = (1-self.gamma_exp)*(p/np.sum(p)) + self.gamma_exp*(np.ones_like(p)/p.size)
             
-            if learn:
-                q_chosen = np.random.choice(len(moves),1,p=p)[0]
-            else:
-                q_chosen = np.argmax(p)
+            q_chosen = np.argmax(p)
 
 
             (chosenBoard, pickOne) = moves[q_chosen]
@@ -128,10 +125,10 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         aux_rewards = []
         aux_lp = []
 
-        for grid, reward in zip(states, labels):
+        for grid, reward, last_move in zip(states, labels, last_moves):
             lpi = np.zeros([3,3],dtype='int')
-            r,c = np.where(grid==1)
-            lpi[r//3,c//3] = 1
+            r,c = np.where(last_move==1)
+            lpi[r%3,c%3] = 1
             for i in range(4):
                 temp = np.rot90(grid,i)
                 temp_lpi = np.rot90(lpi,i)
@@ -142,6 +139,8 @@ class conv_RLUTTTPlayer(UTTTPlayer):
                 aux_data.append(temp.T)
                 aux_lp.append(temp_lpi.T)
                 aux_rewards.append(reward)
+
+
 
         self.model.fit([np.array(aux_data, dtype='float32'),np.array(aux_lp)], np.array(aux_rewards, dtype='float32'), epochs=10, verbose=0)
 
