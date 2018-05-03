@@ -129,12 +129,10 @@ class conv_RLUTTTPlayer(UTTTPlayer):
         aux_lp = []
 
         for grid, reward in zip(states, labels):
+            lpi = np.zeros([3,3],dtype='int')
+            r,c = np.where(grid==1)
+            lpi[r//3,c//3] = 1
             for i in range(4):
-                lpi = np.zeros([3,3],dtype='int')
-                r,c = np.where(grid==1)
-                lpi[r//3,c//3] = 1
-
-
                 temp = np.rot90(grid,i)
                 temp_lpi = np.rot90(lpi,i)
 
